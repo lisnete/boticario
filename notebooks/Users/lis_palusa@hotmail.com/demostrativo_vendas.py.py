@@ -1,4 +1,8 @@
 # Databricks notebook source
+teste salvando os dados no git
+
+# COMMAND ----------
+
 #comando usado para desmontar o ponto de montagem olhando para o datalake azure blob
 dbutils.fs.unmount(mount_point = "/mnt")
 
