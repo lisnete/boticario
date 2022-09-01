@@ -1,0 +1,97 @@
+-------------------------------------------------------------------------------------------------------------------------------------------
+CASE 1
+-------------------------------------------------------------------------------------------------------------------------------------------
+Para o cenário repassado eu optaria por utilizar a estrutura delta lake no databricks. Estudei varios cenários, mas de acordo com a descrição do caso, pensando na questão da governaça de dados, acesso a  dados sensiveis, catalogação, a estrutura delta lake no databricks oferece todo suporte a esses casos.
+Apesar da estrutura delta lake ser uma formato que não depende do databricks, eu usaria a estrutura delta juntamente com esta ferramenta pela questão dos benefícios que o databricks traz para se trabalhar com o formato de arquivos delta.
+Também é possível fazer a integração dele com o SAP Hanna, há conectores pra isso se caso houver necessidade.
+A estrutura delta já é a união do data lake com o data warehouse, então usar o SAP Hanna poderia ser analisado, não descartei a integração porque não conheço a estrutura completa. No delta lake trabalhamos em 3 camadas (bronze, silver e gold) onde engenheiros, analistas, cientistas tem todo o ambiente necessario para fazer suas analises, inclusive utilizando a linguagem sql e com resultado de buscas surpreendentes. O delta lake tambpem oferece suporte a logs, versionamento do dados, evolução de schema, operações de bach ou streming de forma simples
+
+Vantagens do uso do data lake com databricks
+Processamento distribuido
+Linguagem familiar, pode usar SQL
+Ambiente para todo tipo de profissionais poderem fazer suas analises
+Interface amigavel e simples
+versionamento do dado
+Dados em streaming ou batch
+
+Desvantagens
+a) quando ha problema com algum processamento requer profissionais com conhecimento maior
+b) os metadados são armazenados dentro da pasta dos arquivos delta, sem os metadados, não existe a estrutura
+c) o armazenamento é caro
+d) Percebi que há problemas ainda sem solução, é um produto em desenvolvimento, apesar de ja estar bem avançado. Problemas como por exemplo com alguma bibliotecas que não funcionam 100%
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+CASE 2
+-------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
+PRIMEIRO PASSO FOI CONVERTER OS ARQUIVOS QUE RECEBI EM CSV E GRAVÁ-LOS EM UM BANCO SQL SERVER LOCAL
+--------------------------------------------------------------------------------------------------------
+1 - Criei um processo em python para fazer a conversao desses arquivos chamado convert_files.py
+
+   Para usar esta estrutura abaixo, arquivos csv devem ser armazenados na pasta csv e arquivos xlsx devem estar na pasta xlsx
+
+   Temos a seguinte estutura de pastas:
+   a) landed: contém  arquivos que estão prontos para serem processados e armazenados no bd
+   b) processed: contém arquivos que ja foram convertidos
+   c) error: contém os arquivos com erro, ous eja, que por alguma razão não puderam ser processados
+   d) csv: contem arquivos csv
+   e) xlsx -  contem arquivos xlsx
+   f) archive - contem backup dos arquivos processados. 
+        csv   - arquivos que vieram como csv
+        xlsx  - arquivos que vieram como xslx
+
+1) o job convert_files.py roda a cada tempo e verifica se existem arquivos na pasta csv e xlsx.
+  a) caso encontre um csv é feito um processo de rename substituindo espaços e outros caracteres do nome do arquivo e adicionando a data nele para ter o controle de quando aquele arquivo chegou na pasta. Não há nada de conversao uma vez que ele ja esta no formato csv, então o arquivo é feito uma copia do arquivo na pasta archive/csv e após isso o arquivo é movido para a pasta landed, ou seja, esta pronto para ser processado.
+
+  a) caso encontre um xlsx é feito um processo de rename substituindo espaços e outros caracteres do nome do arquivo e adicionando a data nele para ter o controle de quando aquele arquivo chegou na pasta. Após isso, inicia-se a conversao deste arquivo de xlsx para csv, após isso é feito uma copia do arquivo na pasta archive/xlsx em seguida o arquivo agora convertido é movido para a pasta landed, ou seja, esta pronto para ser processado.
+
+2) Agora entra a vez do job load_files_to_bd.py. Este verifica se existem arquivos ja no formato csv na pasta landed. Identificado que sim, inicia-se o processo de leitura desses arquivos e armazenamento no banco de dados. Se o processo de gravação no banco foi ok, o arquivo é movido para a pasta processados. Caso dê algum erro, ele é movido para a pasta error e posteriormente deve ser analisado o porque nao converteu
+
+--------------------------------------------------------------------------------------------------------
+SEGUNDO PASSO FOI LER ESSE BANCO LOCAL COM O DATA FACTORY
+--------------------------------------------------------------------------------------------------------
+Criei um pipeline de dados que lê esse meu banco de dados local e salvei em uma pasta no meu data lake gen2 na nuvem, optei por usar AZURE, ja que é a que tenho dominio no momento.
+1) No azure criei um container chamado boticario, dentro dele uma pasta chamada vendas_boticario
+2) Rodei o pipeline e o arquivo ficou disponivel nesta pasta. 
+
+
+--------------------------------------------------------------------------------------------------------
+TERCEIRO PASSO OPTEI POR TRABALHAR NESTA ETAPA COM O DATABRICKS
+--------------------------------------------------------------------------------------------------------
+1) criei no databricks os seguintes notebooks
+   a) load_archives_to_bd -> lê o arquivo que o data factory disponibilizou na pasta vendas. Tambpem criei no meu Dbricks um banco de dados chamado boticario para uso do meu projeto.
+Esse notebook faz a leitura dos arquivos salvos pelo data factory e salva os dados em uma estrutura delta lake. Também cria uma tabela dentro do meu banco boticario do databricks apontando pra esta estrutura de arquivos delta.
+
+2) b) demosntrativo_vendas.py -> lê esta tabela delta e extrai o que foi solicitado no teste, ou sejaa:
+   a. Tabela1: Consolidado de vendas por ano e mês;
+   b. Tabela2: Consolidado de vendas por marca e linha;
+   c. Tabela3: Consolidado de vendas por marca, ano e mês;
+   d. Tabela4: Consolidado de vendas por linha, ano e mês; 
+
+3) extract_twitter.py -> faz um consolidado das vendas do ano/mes 12/2019 ordenando por qtd_venda desc, com isso sei que a primeira linha retornada ja é da maior venda, depois so peguei o nome desta linha, concatenei com a palavar Boticario + nome_linha e coloquei na query que busca dados da API do twitter recebendo os 50 regostros mais recentes de twittes da busca. Removi urls, emojis, fiz um token destes twittes retornados, removi duplicados, nulos e Exibi esses twittes. Criei uma tabela delta destes twittes também, isso facilita que engenheiros, analistas e cientistas de dados possam fazer trabalhos em cima desses dados
+
+-------------------------------------------------------------------------------------------------------
+QUARTO PASSO FOI SCHEDULAR AS EXECUÇÕES
+--------------------------------------------------------------------------------------------------------
+No prórpio databricks, em workflows criei um job que executa os tres notebooks, onde primeiro ele executa load_archives_to_bd, após demosntrativo_vendas.py e por ultimo extract_twitter.py. Esses dois ultimos dependem da execução do primeiro, ou seja, são dependentes dele.
+Coloquei eles como scheduled, ou seja, automaticos para rodarem todo dia as 00:00:00 com UTC-03:00. Configurei também que em casod e falha, um email deve ser enviado pra mim.
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+    
