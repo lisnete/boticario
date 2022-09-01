@@ -1,13 +1,17 @@
 # Databricks notebook source
-pip install demoji;
+pip install demoji
 
 # COMMAND ----------
 
-pip install spacy;
+pip install spacy
 
 # COMMAND ----------
 
-!python -m spacy download en_core_web_lg; 
+!python -m spacy download en_core_web_lg
+
+# COMMAND ----------
+
+!pip install tweepy 
 
 # COMMAND ----------
 
@@ -78,12 +82,8 @@ dflinha = df_venda_ano_mes[['linha']].first()
 # COMMAND ----------
 
 # DBTITLE 1,cria variável com palavra a ser pesquisada na API / removendo retweets
-query_search = "Boticario " + dflinha['linha'] + " filter:retweets"
-
-# COMMAND ----------
-
-# DBTITLE 1,coloca tudo em minusculo
-query_search = query_search.lower()
+#query_search = "Boticario " + dflinha['linha']# + " filter:retweets"
+query_search = "Boticario " + dflinha['linha'] + " -is:retweet"
 
 # COMMAND ----------
 
@@ -94,19 +94,19 @@ tweets =  tweepy.Cursor(api.search_tweets, query_search, lang="pt", count=10).it
 
 # DBTITLE 1,transforma resultado dos twuits em uma lista
 #transforma resultado dos twuits em uma lista
-data = [[tweet.user.screen_name, tweet.text, tweet.created_at] for tweet in tweets]
+data = [[tweet.user.name, tweet.text, tweet.created_at] for tweet in tweets]
 
 # COMMAND ----------
 
 # DBTITLE 1,coloca os dados em um dataframe
 #coloca os dados em um dataframe
 import pandas as pd
-df = pd.DataFrame(data, columns=['screen_name', 'text', 'created_at'])
+df = pd.DataFrame(data, columns=['name', 'text', 'created_at'])
 
 # COMMAND ----------
 
 # DBTITLE 1,define o nome das colunas
-df.columns=['name', 'text', 'created_at']
+df.columns=['user_name', 'text', 'created_at']
 
 # COMMAND ----------
 
@@ -168,10 +168,8 @@ df = df.drop_duplicates(subset=['text'])
 
 # COMMAND ----------
 
-# DBTITLE 1,Exibe os twittes extraídos da API
-# mostra os twittes
-for index, row in df.iterrows():
-    print(row.text)
+# DBTITLE 1,Exibe twittes
+display(df)
 
 # COMMAND ----------
 
