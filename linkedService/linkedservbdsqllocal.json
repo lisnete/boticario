@@ -1,0 +1,16 @@
+{
+	"name": "linkedservbdsqllocal",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "integrated security=False;data source=GMPNC002023\\INTROSQLSERVER;initial catalog=twitter;user id=azure",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI0N2JkNjI0NC1kNGFmLTRmYjktYThiMi1mMTE2NDJmNGVmYmEiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "irtreinamento",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

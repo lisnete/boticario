@@ -1,0 +1,9 @@
+{
+	"name": "dflmtreinamentoboticario",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "02766b16-2ab6-4b8c-9dd2-5bc86cf749a1",
+		"tenantId": "b50ad81e-184c-48fa-b8a7-dcc7687933c8"
+	}
+}

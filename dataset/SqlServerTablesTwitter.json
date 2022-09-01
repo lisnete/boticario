@@ -1,0 +1,17 @@
+{
+	"name": "SqlServerTablesTwitter",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "linkedservbdsqllocal",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "venda_boticario"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
