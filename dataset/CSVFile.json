@@ -1,5 +1,5 @@
 {
-	"name": "ReadCSVFile",
+	"name": "CSVFile",
 	"properties": {
 		"description": "Leitura de arquivos CSV em datalake",
 		"linkedServiceName": {
