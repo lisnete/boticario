@@ -1,18 +1,32 @@
 {
-	"name": "dlgen2treinamento",
+	"name": "ReadCSVFile",
 	"properties": {
+		"description": "Leitura de arquivos CSV em datalake",
 		"linkedServiceName": {
-			"referenceName": "linkedservdlakegen2treinamento",
+			"referenceName": "wksyntreinamento-WorkspaceDefaultStorage",
 			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"container": {
+				"type": "string"
+			},
+			"path": {
+				"type": "string"
+			}
 		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "vendas_boticario.csv",
-				"folderPath": "arquivos_venda",
-				"fileSystem": "boticario"
+				"folderPath": {
+					"value": "@dataset().path",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().container",
+					"type": "Expression"
+				}
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
