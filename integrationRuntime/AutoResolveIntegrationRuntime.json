@@ -8,17 +8,9 @@
 				"dataFlowProperties": {
 					"computeType": "General",
 					"coreCount": 8,
-					"timeToLive": 0,
-					"cleanup": true
-				},
-				"pipelineExternalComputeScaleProperties": {
-					"timeToLive": 60
+					"timeToLive": 0
 				}
 			}
-		},
-		"managedVirtualNetwork": {
-			"type": "ManagedVirtualNetworkReference",
-			"referenceName": "default"
 		}
 	}
 }
