@@ -1,0 +1,62 @@
+{
+	"name": "DFProdBeleza",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ReadCSVFile",
+						"type": "DatasetReference"
+					},
+					"name": "GetDateProdBeleza"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ReadCSVFile",
+						"type": "DatasetReference"
+					},
+					"name": "WriteCsvFile"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "sort1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID_MARCA as short,",
+				"          MARCA as string,",
+				"          ID_LINHA as short,",
+				"          LINHA as string,",
+				"          DATA_VENDA as date 'MM/dd/yyyy',",
+				"          QTD_VENDA as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> GetDateProdBeleza",
+				"GetDateProdBeleza aggregate(groupBy(MARCA,",
+				"          LINHA,",
+				"          DATA_VENDA = year(DATA_VENDA)),",
+				"     VendasData = sum(QTD_VENDA)\r",
+				") ~> aggregate1",
+				"aggregate1 sort(desc(MARCA, true)) ~> sort1",
+				"sort1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['aggm_year'],",
+				"     umask: 0777,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> WriteCsvFile"
+			]
+		}
+	}
+}
