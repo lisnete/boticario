@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "ReadCSVFile",
+						"referenceName": "CSVFile",
 						"type": "DatasetReference"
 					},
 					"name": "GetDateProdBeleza"
@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ReadCSVFile",
+						"referenceName": "CSVFile",
 						"type": "DatasetReference"
 					},
 					"name": "WriteCsvFile"
@@ -44,8 +44,7 @@
 				"GetDateProdBeleza aggregate(groupBy(MARCA,",
 				"          LINHA,",
 				"          DATA_VENDA = year(DATA_VENDA)),",
-				"     VendasData = sum(QTD_VENDA)\r",
-				") ~> aggregate1",
+				"     VendasData = sum(QTD_VENDA)) ~> aggregate1",
 				"aggregate1 sort(desc(MARCA, true)) ~> sort1",
 				"sort1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
