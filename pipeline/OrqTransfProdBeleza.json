@@ -1,6 +1,43 @@
 {
 	"name": "OrqTransfProdBeleza",
 	"properties": {
+		"activities": [
+			{
+				"name": "DFTransfProdBeleza",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DFProdBeleza",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"GetDateProdBeleza": {
+								"container": "cttreinamento",
+								"path": "boticario"
+							},
+							"WriteCsvFile": {
+								"container": "cttreinamento",
+								"path": "aggm"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine",
+					"runConcurrently": false
+				}
+			}
+		],
 		"annotations": []
 	}
 }
